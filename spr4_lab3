@@ -1,0 +1,76 @@
+# Instalar las librerías si no están instaladas
+install.packages("dplyr")
+install.packages("tidyr")
+
+# Cargar las librerías
+library(dplyr)
+library(tidyr)
+
+# Cargar el dataset mtcars
+data(mtcars)
+
+# Convertir mtcars en un dataframe (si no es ya un dataframe)
+df <- as.data.frame(mtcars)
+
+# 2. Selección de columnas y filtrado de filas
+df_filtrado <- df %>%
+  select(mpg, cyl, hp, gear) %>%
+  filter(cyl > 4)
+
+# Imprimir el dataframe después de la selección y filtrado
+cat("1. Selección de columnas y filtrado de filas:\n")
+print(df_filtrado)
+
+# 3. Ordenación y renombrado de columnas
+df_ordenado <- df_filtrado %>%
+  arrange(desc(hp)) %>%
+  rename(consumo = mpg, potencia = hp)
+
+# Imprimir el dataframe después de la ordenación y renombrado
+cat("\n2. Ordenación y renombrado de columnas:\n")
+print(df_ordenado)
+
+# 4. Creación de nuevas columnas y agregación de datos
+df_eficiencia <- df_ordenado %>%
+  mutate(eficiencia = consumo / potencia) %>%
+  group_by(cyl) %>%
+  summarise(consumo_medio = mean(consumo), potencia_maxima = max(potencia))
+
+# Imprimir el dataframe después de crear la columna eficiencia y realizar la agregación
+cat("\n3. Creación de nuevas columnas y agregación de datos:\n")
+print(df_eficiencia)
+
+# 5. Creación del segundo dataframe y unión de dataframes
+df_transmision <- data.frame(
+  gear = c(3, 4, 5),
+  tipo_transmision = c("Manual", "Automática", "Semiautomática")
+)
+
+# Realizar el left_join entre el dataframe original y el segundo dataframe
+df_unido <- left_join(df_ordenado, df_transmision, by = "gear")
+
+# Imprimir el dataframe después de la unión
+cat("\n4. Unión de dataframes:\n")
+print(df_unido)
+
+# 6. Transformación de formatos y manejo de duplicados
+df_largo <- df_unido %>%
+  pivot_longer(cols = c(consumo, potencia, eficiencia), 
+               names_to = "medida", values_to = "valor")
+
+# Imprimir el dataframe en formato largo
+cat("\n5. Transformación a formato largo:\n")
+print(df_largo)
+
+# Agrupar por las columnas clave para manejar duplicados
+df_largo_agregado <- df_largo %>%
+  group_by(cyl, gear, tipo_transmision, medida) %>%
+  summarise(valor_promedio = mean(valor))
+
+# Volver a transformar a formato ancho utilizando pivot_wider()
+df_ancho <- df_largo_agregado %>%
+  pivot_wider(names_from = medida, values_from = valor_promedio)
+
+# Imprimir el dataframe en formato ancho
+cat("\n6. Transformación a formato ancho:\n")
+print(df_ancho)

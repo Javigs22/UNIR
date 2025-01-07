@@ -1,0 +1,70 @@
+---
+title: "Análisis Exploratorio de Datos con mtcars"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    theme: readable
+    highlight: tango
+---
+
+# Introducción
+
+Este documento tiene como objetivo realizar un **análisis exploratorio** de datos utilizando el conjunto de datos `mtcars` incluido en R. A continuación, se explorarán sus características principales mediante tablas y gráficos.
+
+### Objetivos del análisis:
+
+1. Presentar el conjunto de datos `mtcars` utilizando tablas estáticas e interactivas.
+2. Generar visualizaciones que representen relaciones entre variables clave.
+3. Resumir hallazgos importantes al final del análisis.
+
+# Carga y Preparación de Datos
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(knitr)
+library(DT)
+library(ggplot2)
+```
+
+El conjunto de datos `mtcars` se cargará y se utilizará para realizar el análisis. Este dataset incluye información sobre diferentes características de automóviles.
+
+```{r load_data}
+data("mtcars")
+mtcars <- mtcars %>% 
+  rownames_to_column(var = "Modelo") %>% 
+  as_tibble()
+```
+
+# Análisis de Datos
+
+## Tabla Estática
+
+A continuación, se presenta una tabla estática con las primeras filas del conjunto de datos.
+
+```{r static_table}
+kable(head(mtcars), caption = "Tabla 1: Primeras filas del conjunto de datos mtcars.")
+```
+
+## Tabla Interactiva
+
+Aquí se incluye una tabla interactiva para facilitar la exploración completa del conjunto de datos.
+
+```{r interactive_table}
+datatable(mtcars, options = list(pageLength = 5), caption = "Tabla 2: Conjunto de datos mtcars completo.")
+```
+
+## Gráfico de Dispersión
+
+El siguiente gráfico muestra la relación entre el peso del vehículo (`wt`) y el consumo de millas por galón (`mpg`).
+
+```{r scatter_plot}
+ggplot(mtcars, aes(x = wt, y = mpg)) +
+  geom_point(color = "blue", size = 3) +
+  labs(
+    title = "Relación entre Peso y Consumo de Combustible",
+    x = "Peso (1000 lbs)",
+    y = "Millas por Galón (mpg)"
+  ) +
+  theme_minimal()
+```

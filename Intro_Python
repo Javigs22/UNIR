@@ -1,0 +1,35 @@
+# Lista de puntuaciones de 5 estudiantes
+puntuaciones = [85, 92, 78, 95, 88]
+
+# Función para calcular el promedio de las puntuaciones
+def calcular_promedio_puntuaciones(puntuaciones):
+    total = 0
+    for puntuacion in puntuaciones:
+        total += puntuacion
+    promedio = total / len(puntuaciones)
+    return promedio
+
+# Función para encontrar la puntuación máxima
+def calcular_puntuacion_maxima(puntuaciones):
+    puntuacion_maxima = puntuaciones[0]  # Inicializamos con el primer valor de la lista
+    for puntuacion in puntuaciones:
+        if puntuacion > puntuacion_maxima:
+            puntuacion_maxima = puntuacion
+    return puntuacion_maxima
+
+# Función para calcular el total de las puntuaciones
+def calcular_total_puntuaciones(puntuaciones):
+    total = 0
+    for puntuacion in puntuaciones:
+        total += puntuacion
+    return total
+
+# Llamar a las funciones y mostrar los resultados
+promedio = calcular_promedio_puntuaciones(puntuaciones)
+puntuacion_maxima = calcular_puntuacion_maxima(puntuaciones)
+total_puntuaciones = calcular_total_puntuaciones(puntuaciones)
+
+# Imprimir los resultados
+print(f"Promedio de puntuaciones: {promedio:.2f}")
+print(f"Puntuación máxima: {puntuacion_maxima}")
+print(f"Total de puntuaciones: {total_puntuaciones}")

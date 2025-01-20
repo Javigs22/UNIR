@@ -1,0 +1,83 @@
+# Paso 2: Importar las librerías necesarias
+import pandas as pd
+import numpy as np
+
+# Paso 3: Cargar los datos desde los archivos CSV
+ventas = pd.read_csv('/workspace/ventas.csv')
+inventarios = pd.read_csv('/workspace/inventarios.csv')
+satisfaccion = pd.read_csv('/workspace/satisfaccion.csv')
+
+# Mostrar los primeros registros de cada DataFrame para verificar los datos cargados
+print("Ventas DataFrame:")
+print(ventas.head())
+
+print("\nInventarios DataFrame:")
+print(inventarios.head())
+
+print("\nSatisfacción DataFrame:")
+print(satisfaccion.head())
+
+# Paso 4: Limpiar los datos (eliminar filas con valores nulos)
+ventas = ventas.dropna()
+inventarios = inventarios.dropna()
+satisfaccion = satisfaccion.dropna()
+
+# Verificar la limpieza de los datos
+print("\nVentas - Valores nulos por columna:")
+print(ventas.isnull().sum())
+
+print("\nInventarios - Valores nulos por columna:")
+print(inventarios.isnull().sum())
+
+print("\nSatisfacción - Valores nulos por columna:")
+print(satisfaccion.isnull().sum())
+
+# Paso 5: Exploración y Análisis de Datos con Pandas
+
+# Calcular las ventas totales por producto y tienda
+ventas['Total_Ventas'] = ventas['Unidades'] * ventas['Precio_unitario']
+ventas_totales_tienda = ventas.groupby('Tienda')['Total_Ventas'].sum()
+
+print("\nVentas totales por tienda:")
+print(ventas_totales_tienda)
+
+# Paso 6: Calcular la rotación de inventarios
+inventarios['Rotacion'] = inventarios['Stock'] / inventarios['Total_Ventas']
+print("\nRotación de inventarios por tienda:")
+print(inventarios[['Tienda', 'Rotacion']])
+
+# Filtrar tiendas con inventarios críticos (menos del 10% de ventas respecto al inventario)
+tiendas_criticas = inventarios[inventarios['Rotacion'] < 0.1]
+print("\nTiendas con inventarios críticos:")
+print(tiendas_criticas)
+
+# Paso 7: Analizar la satisfacción del cliente
+tiendas_baja_satisfaccion = satisfaccion[satisfaccion['Satisfaccion'] < 60]
+print("\nTiendas con baja satisfacción (<60%):")
+print(tiendas_baja_satisfaccion)
+
+# Paso 8: Operaciones con Numpy
+
+# Convertir la columna de ventas totales a un array de Numpy
+ventas_totales_array = ventas['Total_Ventas'].to_numpy()
+
+# Calcular la mediana y desviación estándar de las ventas
+mediana_ventas = np.median(ventas_totales_array)
+desviacion_estandar_ventas = np.std(ventas_totales_array)
+
+print(f'\nMediana de ventas: {mediana_ventas}')
+print(f'Desviación estándar de ventas: {desviacion_estandar_ventas}')
+
+# Paso 9: Simular proyecciones de ventas futuras
+# Establecer una semilla para resultados reproducibles
+np.random.seed(42)
+
+# Simular proyecciones de ventas futuras (por ejemplo, 1000 proyecciones de ventas)
+proyecciones_ventas = np.random.normal(loc=mediana_ventas, scale=desviacion_estandar_ventas, size=1000)
+
+# Calcular estadísticas sobre las proyecciones de ventas futuras
+media_proyecciones = np.mean(proyecciones_ventas)
+desviacion_proyecciones = np.std(proyecciones_ventas)
+
+print(f'\nMedia de las proyecciones de ventas futuras: {media_proyecciones}')
+print(f'Desviación estándar de las proyecciones de ventas futuras: {desviacion_proyecciones}')

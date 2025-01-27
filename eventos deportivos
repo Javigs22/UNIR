@@ -1,0 +1,38 @@
+import pandas as pd
+
+# Cargar los datos desde los archivos CSV
+df_eventos = pd.read_csv('/workspace/eventos.csv')
+df_aficionados = pd.read_csv('/workspace/aficionados.csv')
+df_promociones = pd.read_csv('/workspace/promociones.csv')
+
+# Limpieza de datos: eliminar filas con valores nulos
+df_eventos = df_eventos.dropna()
+df_aficionados = df_aficionados.dropna()
+df_promociones = df_promociones.dropna()
+
+# Combinar los tres DataFrames
+df_completo = pd.merge(df_eventos, df_aficionados, on='id_evento', how='inner')
+df_completo = pd.merge(df_completo, df_promociones, on='id_evento', how='inner')
+
+# 1. Evento con mayor asistencia total
+evento_max_asistencia = df_completo.loc[df_completo['asistentes_totales'].idxmax()]
+print("El evento con mayor asistencia total es:", evento_max_asistencia['nombre_evento'])
+
+# 2. Rango de edad que asiste más frecuentemente a los eventos
+bins = [0, 18, 30, 40, 50, 60, 100]
+labels = ['0-18', '19-30', '31-40', '41-50', '51-60', '60+']
+df_completo['rango_edad'] = pd.cut(df_completo['edad'], bins=bins, labels=labels, right=False)
+grupo_edad_mas_frecuente = df_completo['rango_edad'].value_counts().idxmax()
+print("El rango de edad que asiste más frecuentemente a los eventos es:", grupo_edad_mas_frecuente)
+
+# 3. Medio publicitario con mayor impacto
+df_completo['impacto_promocion'] = df_completo['asistentes_totales'] / df_completo['presupuesto']
+medio_max_impacto = df_completo.groupby('medio_publicitario')['impacto_promocion'].max().idxmax()
+print("El medio publicitario con mayor impacto es:", medio_max_impacto)
+
+# 4. Ubicación de residencia que más aficionados aporta
+ubicacion_max_aficionados = df_completo.groupby('ubicacion_residencia')['nombre'].count().idxmax()
+print("La ubicación que más aficionados aporta a los eventos es:", ubicacion_max_aficionados)
+
+# Exportar el DataFrame final
+df_completo.to_csv('/workspace/reporte_eventos.csv', index=False)

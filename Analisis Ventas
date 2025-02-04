@@ -1,0 +1,86 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import statsmodels.api as sm
+# Definir rutas absolutas de los archivos
+ventas_path = "/workspace/ventas_peliculas.csv"
+promociones_path = "/workspace/promocion_peliculas.csv"
+
+# Cargar los datos
+df_ventas = pd.read_csv(ventas_path)
+df_promociones = pd.read_csv(promociones_path)
+
+# Unir los DataFrames usando left join sobre 'fecha' y 'titulo'
+df = pd.merge(df_ventas, df_promociones, how="left", on=["fecha", "titulo"], validate="1:m")
+
+# Identificar valores nulos
+print("Valores nulos antes del tratamiento:\n", df.isna().sum())
+
+# Rellenar valores nulos
+df.fillna(method="ffill", inplace=True)  # Forward fill
+df.fillna(method="bfill", inplace=True)  # Backward fill
+
+print("\nValores nulos después del tratamiento:\n", df.isna().sum())
+
+# Asegurar que la columna 'fecha' sea de tipo datetime
+df["fecha"] = pd.to_datetime(df["fecha"])
+plt.figure(figsize=(12, 5))
+sns.lineplot(x=df["fecha"], y=df["ventas_boletos"], marker="o", color="blue")
+plt.xlabel("Fecha")
+plt.ylabel("Ventas de Boletos")
+plt.title("Ventas de Boletos Semanales")
+plt.xticks(rotation=45)
+plt.grid(True)
+plt.show()
+df["con_promocion"] = df["eventos_promocionales"].apply(lambda x: "Con Promoción" if x > 0 else "Sin Promoción")
+
+plt.figure(figsize=(8, 5))
+sns.barplot(x="con_promocion", y="ventas_boletos", data=df, palette="coolwarm")
+plt.xlabel("Tipo de Semana")
+plt.ylabel("Ventas Promedio de Boletos")
+plt.title("Comparación de Ventas: Con vs Sin Promoción")
+plt.show()
+correlacion = df[["ventas_boletos", "calificacion", "eventos_promocionales", "participacion_promocion"]].corr()
+
+plt.figure(figsize=(6, 4))
+sns.heatmap(correlacion, annot=True, cmap="coolwarm", fmt=".2f")
+plt.title("Matriz de Correlación")
+plt.show()
+plt.figure(figsize=(6, 4))
+sns.boxplot(x=df["ventas_boletos"], color="orange")
+plt.title("Boxplot de Ventas de Boletos")
+plt.show()
+
+# Identificación de outliers usando IQR
+Q1 = df["ventas_boletos"].quantile(0.25)
+Q3 = df["ventas_boletos"].quantile(0.75)
+IQR = Q3 - Q1
+
+limite_inferior = Q1 - 1.5 * IQR
+limite_superior = Q3 + 1.5 * IQR
+
+outliers = df[(df["ventas_boletos"] < limite_inferior) | (df["ventas_boletos"] > limite_superior)]
+print("\nCantidad de Outliers Detectados:", len(outliers))
+# Definir variables independientes (X) y dependiente (y)
+X = df[["calificacion", "eventos_promocionales", "participacion_promocion"]]
+y = df["ventas_boletos"]
+
+# Agregar constante para la regresión
+X = sm.add_constant(X)
+
+# Ajustar el modelo de regresión lineal
+modelo = sm.OLS(y, X).fit()
+
+# Resumen del modelo
+print(modelo.summary())
+df["ventas_predichas"] = modelo.predict(X)
+
+plt.figure(figsize=(10, 5))
+plt.scatter(df["ventas_boletos"], df["ventas_predichas"], alpha=0.7, color="blue")
+plt.xlabel("Ventas Reales")
+plt.ylabel("Ventas Predichas")
+plt.title("Comparación de Ventas Reales vs Predichas")
+plt.plot([df["ventas_boletos"].min(), df["ventas_boletos"].max()], 
+         [df["ventas_boletos"].min(), df["ventas_boletos"].max()], color="red", linestyle="dashed")
+plt.show()

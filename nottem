@@ -1,0 +1,46 @@
+# 1. Cargar el dataset
+data("nottem")
+
+# Inspeccionar la estructura del dataset
+print(class(nottem))   # Verifica que es una serie temporal (ts)
+print(summary(nottem)) # Resumen estadístico
+
+# Graficar la serie temporal
+plot(nottem, main = "Temperaturas Mensuales en Nottingham (1920-1939)",
+     xlab = "Año", ylab = "Temperatura", col = "blue")
+
+# 2. Exploración y preparación de datos
+# Descomponer la serie temporal para identificar los componentes
+decomposed <- decompose(nottem)
+plot(decomposed)
+
+# 3. Análisis de estacionariedad
+# Graficar autocorrelación y autocorrelación parcial (ACF/PACF)
+acf(nottem, main = "ACF de Temperaturas de Nottingham")
+pacf(nottem, main = "PACF de Temperaturas de Nottingham")
+
+# Prueba de Dickey-Fuller para evaluar la estacionariedad
+library(tseries)
+adf_test <- adf.test(nottem)
+cat("Resultado de la prueba de Dickey-Fuller Aumentada:\n")
+print(adf_test)
+
+# Si la serie no es estacionaria, realizar diferenciación
+if(adf_test$p.value > 0.05) {
+  nottem_diff <- diff(nottem)
+  plot(nottem_diff, main = "Serie Temporal Diferenciada", col = "red", lwd = 2)
+  
+  # Verificar la estacionariedad después de la diferenciación
+  acf(nottem_diff, main = "ACF de Serie Diferenciada")
+  pacf(nottem_diff, main = "PACF de Serie Diferenciada")
+} else {
+  cat("La serie es estacionaria, no se requiere diferenciación.\n")
+}
+
+# 4. Detección de valores atípicos
+# Visualizar posibles valores atípicos usando boxplot
+boxplot(nottem, main = "Boxplot de Temperaturas de Nottingham", col = "lightblue")
+
+# 5. Interpretación de resultados
+cat("\nInterpretación de resultados:\n")
+cat("Se observan patrones estacionales claros con fluctuaciones anuales, junto con una tendencia leve que muestra temperaturas que tienden a ser más altas en los meses de verano.")

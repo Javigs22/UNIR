@@ -1,0 +1,51 @@
+# Cargar el dataset
+data("AirPassengers")
+
+# Inspeccionar la estructura del dataset
+print(class(AirPassengers))   # Verifica que es una serie temporal (ts)
+print(summary(AirPassengers)) # Resumen estadístico
+print(start(AirPassengers))   # Inicio de la serie
+print(end(AirPassengers))     # Fin de la serie
+print(frequency(AirPassengers)) # Frecuencia: 12 (mensual)
+
+# 2. Exploración inicial: graficar la serie temporal
+plot(AirPassengers, main = "Número de Pasajeros Internacionales (AirPassengers)",
+     xlab = "Tiempo", ylab = "Número de Pasajeros", col = "blue", lwd = 2)
+
+# Calcular estadísticas descriptivas básicas
+mean_airpassengers <- mean(AirPassengers)
+sd_airpassengers <- sd(AirPassengers)
+cat("Media:", mean_airpassengers, "\n")
+cat("Desviación estándar:", sd_airpassengers, "\n")
+
+# 3. Análisis de tendencia y estacionalidad: descomponer la serie temporal
+decomposed <- decompose(AirPassengers)
+plot(decomposed)
+
+# 4. Análisis de estacionariedad
+# Graficar autocorrelación y autocorrelación parcial
+acf(AirPassengers, main = "ACF de AirPassengers")
+pacf(AirPassengers, main = "PACF de AirPassengers")
+
+# Prueba de Dickey-Fuller aumentada
+library(tseries)
+adf_test <- adf.test(AirPassengers)
+cat("Resultado de la prueba de Dickey-Fuller Aumentada:\n")
+print(adf_test)
+
+# Si la serie no es estacionaria, realizar diferenciación
+AirPassengers_diff <- diff(AirPassengers)
+plot(AirPassengers_diff, main = "Serie Temporal Diferenciada", col = "red", lwd = 2)
+
+# Verificar la estacionariedad después de la diferenciación
+acf(AirPassengers_diff, main = "ACF de Serie Diferenciada")
+pacf(AirPassengers_diff, main = "PACF de Serie Diferenciada")
+
+# 5. Detección de valores atípicos
+# Visualizar posibles valores atípicos usando boxplot
+boxplot(AirPassengers, main = "Boxplot de AirPassengers", col = "lightblue")
+
+# 6. Interpretación de resultados
+# Resumen de las tendencias y estacionalidades observadas en la serie temporal
+cat("\nInterpretación de resultados:\n")
+cat("Se observa una clara tendencia ascendente a lo largo del tiempo, junto con patrones estacionales evidentes, con picos en los meses de verano y disminuciones durante el invierno.")

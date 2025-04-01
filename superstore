@@ -1,0 +1,75 @@
+# 1. Importación de librerías necesarias
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+
+# 2. Cargar el dataset
+df = pd.read_csv('superstore.csv')
+
+# Convertir las columnas 'Order Date' y 'Ship Date' a tipo datetime
+df['Order Date'] = pd.to_datetime(df['Order Date'])
+df['Ship Date'] = pd.to_datetime(df['Ship Date'])
+
+# Crear una columna 'YearMonth' para el gráfico de líneas
+df['YearMonth'] = df['Order Date'].dt.to_period('M')
+
+# 3. Gráfico de barras (Ventas totales por categoría)
+fig_barras = px.bar(df.groupby('Category')['Sales'].sum().reset_index(),
+                    x='Category', y='Sales',
+                    labels={'Sales': 'Ventas Totales'},
+                    title='Ventas Totales por Categoría')
+fig_barras.show()
+
+# 4. Gráfico de líneas con Plotly Express (Evolución de ventas a lo largo del tiempo)
+ventas_mes = df.groupby('YearMonth')['Sales'].sum().reset_index()
+fig_lineas_express = px.line(ventas_mes, x='YearMonth', y='Sales',
+                             labels={'Sales': 'Ventas', 'YearMonth': 'Mes'},
+                             title='Evolución de Ventas Mensuales')
+fig_lineas_express.show()
+
+# 5. Gráfico de líneas con Plotly Go (Evolución de ventas con media móvil)
+ventas_mes['Media Movil'] = ventas_mes['Sales'].rolling(window=3).mean()
+fig_lineas_go = go.Figure()
+
+# Línea de ventas
+fig_lineas_go.add_trace(go.Scatter(x=ventas_mes['YearMonth'].astype(str),
+                                  y=ventas_mes['Sales'],
+                                  mode='lines',
+                                  name='Ventas',
+                                  line=dict(color='blue')))
+
+# Línea de media móvil
+fig_lineas_go.add_trace(go.Scatter(x=ventas_mes['YearMonth'].astype(str),
+                                  y=ventas_mes['Media Movil'],
+                                  mode='lines',
+                                  name='Media Móvil (3 meses)',
+                                  line=dict(color='red', width=3)))
+
+fig_lineas_go.update_layout(title='Evolución de Ventas con Media Móvil (3 meses)',
+                            xaxis_title='Mes',
+                            yaxis_title='Ventas')
+fig_lineas_go.show()
+
+# 6. Gráfico Treemap (Ventas por Región, Categoría y Subcategoría)
+fig_treemap = px.treemap(df,
+                         path=['Region', 'Category', 'Sub-Category'],
+                         values='Sales',
+                         title='Ventas por Región, Categoría y Subcategoría')
+fig_treemap.show()
+
+# 7. Gráfico de scatter (Relación entre ventas y ganancia, coloreado por descuento)
+fig_scatter = px.scatter(df, x='Sales', y='Profit', color='Discount',
+                         title='Relación entre Ventas y Ganancia (coloreado por Descuento)',
+                         labels={'Sales': 'Ventas', 'Profit': 'Ganancia'})
+fig_scatter.show()
+
+# 8. Gráfico coroplético (Ventas totales por país en un mapa)
+ventas_por_pais = df.groupby('Country')['Sales'].sum().reset_index()
+fig_coropletico = px.choropleth(ventas_por_pais,
+                                locations='Country',
+                                locationmode='country names',
+                                color='Sales',
+                                title='Ventas Totales por País',
+                                color_continuous_scale='Viridis',
+                                labels={'Sales': 'Ventas Totales'})
+fig_coropletico.show()

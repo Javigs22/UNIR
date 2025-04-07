@@ -1,0 +1,98 @@
+# Si no tienes Folium instalado, descomenta la siguiente línea
+# !pip install folium
+
+import pandas as pd
+import folium
+from folium.plugins import HeatMap, MarkerCluster
+# Cargar el dataset
+df = pd.read_csv("fires_map.csv")
+
+# Ver las primeras filas del dataset
+df.head()
+# Crear el mapa base centrado en el área de interés
+m = folium.Map(location=[40.4168, -3.7038], zoom_start=6)
+
+# Crear la capa de HeatMap
+heat_data = [[row['latitude'], row['longitude']] for index, row in df.iterrows()]
+HeatMap(heat_data).add_to(m)
+
+# Mostrar el mapa
+m
+# Crear el mapa base
+m2 = folium.Map(location=[40.4168, -3.7038], zoom_start=6)
+
+# Añadir los marcadores
+for index, row in df.iterrows():
+    color = 'green' if row['brightness'] < 300 else ('orange' if row['brightness'] < 400 else 'red')
+    folium.Marker(
+        location=[row['latitude'], row['longitude']],
+        popup=f"Brightness: {row['brightness']}",
+        icon=folium.Icon(color=color, icon='fire', prefix='fa')
+    ).add_to(m2)
+
+# Mostrar el mapa
+m2
+# Crear el mapa base
+m3 = folium.Map(location=[40.4168, -3.7038], zoom_start=6)
+
+# Crear el MarkerCluster
+marker_cluster = MarkerCluster().add_to(m3)
+
+# Añadir los marcadores al cluster
+for index, row in df.iterrows():
+    color = 'green' if row['brightness'] < 300 else ('orange' if row['brightness'] < 400 else 'red')
+    folium.Marker(
+        location=[row['latitude'], row['longitude']],
+        popup=f"Brightness: {row['brightness']}",
+        icon=folium.Icon(color=color, icon='fire', prefix='fa')
+    ).add_to(marker_cluster)
+
+# Mostrar el mapa
+m3
+# Crear el mapa base
+m4 = folium.Map(location=[40.4168, -3.7038], zoom_start=6)
+
+# Crear FeatureGroups para Aqua y Terra
+aqua_group = folium.FeatureGroup(name='Aqua').add_to(m4)
+terra_group = folium.FeatureGroup(name='Terra').add_to(m4)
+
+# Añadir marcadores a los grupos
+for index, row in df.iterrows():
+    color = 'blue' if row['satellite'] == 'Aqua' else 'green'
+    folium.Marker(
+        location=[row['latitude'], row['longitude']],
+        popup=f"Brightness: {row['brightness']}",
+        icon=folium.Icon(color=color, icon='fire', prefix='fa')
+    ).add_to(aqua_group if row['satellite'] == 'Aqua' else terra_group)
+
+# Añadir control de capas
+folium.LayerControl().add_to(m4)
+
+# Mostrar el mapa
+m4
+# Crear el mapa base
+m5 = folium.Map(location=[40.4168, -3.7038], zoom_start=6)
+
+# Crear FeatureGroups para diferentes colores de incendios
+low_brightness_group = folium.FeatureGroup(name='Low Brightness').add_to(m5)
+medium_brightness_group = folium.FeatureGroup(name='Medium Brightness').add_to(m5)
+high_brightness_group = folium.FeatureGroup(name='High Brightness').add_to(m5)
+
+# Añadir marcadores a los grupos según el brightness
+for index, row in df.iterrows():
+    color = 'yellow' if row['brightness'] < 300 else ('orange' if row['brightness'] < 400 else 'red')
+    folium.Marker(
+        location=[row['latitude'], row['longitude']],
+        popup=f"Brightness: {row['brightness']}",
+        icon=folium.Icon(color=color, icon='fire', prefix='fa')
+    ).add_to(low_brightness_group if row['brightness'] < 300 else (medium_brightness_group if row['brightness'] < 400 else high_brightness_group))
+
+# Añadir control de capas
+folium.LayerControl().add_to(m5)
+
+# Mostrar el mapa
+m5
+
+
+
+
